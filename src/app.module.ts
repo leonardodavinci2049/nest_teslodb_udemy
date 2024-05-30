@@ -7,6 +7,7 @@ import { EnvConfig } from 'src/core/config/env.config';
 import { JoiValidationSchema } from 'src/core/config/joi.validations';
 import { TypeOrmModule } from '@nestjs/typeorm';
 //import { writeFileSync } from 'fs';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       // em produção é recomendado desativar o synchronize e fazer as migrações manualmente
       synchronize: true,
     }),
+    ProductsModule,
   ],
   controllers: [],
   providers: [],
