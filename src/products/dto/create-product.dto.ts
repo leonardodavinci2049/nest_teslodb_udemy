@@ -43,4 +43,14 @@ export class CreateProductDto {
   @IsArray()
   @IsOptional()
   tags: string[];
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  id_status2?: number;
+
+  @IsString({ each: true })
+  @IsArray()
+  @IsOptional()
+  images?: string[];
 }

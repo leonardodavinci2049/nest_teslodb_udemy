@@ -8,6 +8,7 @@ import { JoiValidationSchema } from 'src/core/config/joi.validations';
 import { TypeOrmModule } from '@nestjs/typeorm';
 //import { writeFileSync } from 'fs';
 import { ProductsModule } from './products/products.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ProductsModule } from './products/products.module';
       synchronize: true,
     }),
     ProductsModule,
+    SeedModule,
   ],
   controllers: [],
   providers: [],

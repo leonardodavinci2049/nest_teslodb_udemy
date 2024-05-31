@@ -25,6 +25,7 @@ $ yarn install
 $ docker-compose up -d
 ```
 
+
 ## 6. Running the app
 
 ```bash
@@ -38,7 +39,12 @@ $ yarn run start:dev
 $ yarn run start:prod
 ```
 
-## 7. Test
+## 7. Run SEED
+```bash
+$ http://localhost:3000/api/seed
+
+
+## 8. Test
 
 ```bash
 # unit tests
