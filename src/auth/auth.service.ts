@@ -6,17 +6,21 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 
 import * as bcrypt from 'bcrypt';
 
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto, LoginUserDto } from './dto';
+import { JwtPayloadInterface } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    private readonly userRepository: Repository<UserEntity>,
+
+    private readonly jwtService: JwtService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -31,7 +35,10 @@ export class AuthService {
       await this.userRepository.save(user);
       delete user.password;
 
-      return user;
+      return {
+        ...user,
+        token: this.getJwtToken({ id: user.id }),
+      };
       // TODO: Retornar el JWT de acceso
     } catch (error) {
       this.handleDBErrors(error);
@@ -39,21 +46,33 @@ export class AuthService {
   }
 
   async login(loginUserDto: LoginUserDto) {
-    const { email, password } = loginUserDto;
-
-    // const passwordHash = bcrypt.hashSync(password, 10);
+    const { password, email } = loginUserDto;
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true },
+      select: { email: true, password: true, id: true }, //! OJO!
     });
 
-    if (!user) throw new UnauthorizedException('Invalid credentials (email)');
+    if (!user)
+      throw new UnauthorizedException('Credentials are not valid (email)');
 
     if (!bcrypt.compareSync(password, user.password))
-      throw new UnauthorizedException('Invalid credentials (password)');
+      throw new UnauthorizedException('Credentials are not valid (password)');
 
-    return user;
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id }),
+    };
+  }
+
+  validateUser(payload: any) {
+    return this.userRepository.findOne(payload.sub);
+  }
+
+  private getJwtToken(payload: JwtPayloadInterface) {
+    const token = this.jwtService.sign(payload);
+
+    return { access_token: token };
   }
 
   private handleDBErrors(error: any): never {
