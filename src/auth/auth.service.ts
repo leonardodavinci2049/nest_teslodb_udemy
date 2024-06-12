@@ -64,6 +64,13 @@ export class AuthService {
     };
   }
 
+  async checkAuthStatus(user: UserEntity) {
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id }),
+    };
+  }
+
   validateUser(payload: any) {
     return this.userRepository.findOne(payload.sub);
   }

@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Product } from './product.entity';
+import { ProductEntity } from './product.entity';
 
 @Entity({ name: 'product_images' })
 export class ProductImage {
@@ -9,10 +9,10 @@ export class ProductImage {
   url: string;
   // @Column('text')
   // publicId: string;
-  @ManyToOne(() => Product, (product) => product.images, {
+  @ManyToOne(() => ProductEntity, (product) => product.images, {
     onDelete: 'CASCADE',
   })
-  product: Product;
+  product: ProductEntity;
   // @BeforeInsert()
   // generateId() {
   //   this.id = uuidv4();

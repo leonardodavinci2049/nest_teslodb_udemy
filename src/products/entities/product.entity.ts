@@ -1,15 +1,17 @@
-import { ProductImage } from './product-image.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
   Column,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { ProductImage } from './';
+import { UserEntity } from '../../auth/entities/user.entity';
 
 @Entity({ name: 'products' })
-export class Product {
+export class ProductEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -53,17 +55,15 @@ export class Product {
   })
   tags: string[];
 
-  @Column('int', {
-    default: 0,
-  })
-  id_status2: number;
-
   // images
   @OneToMany(() => ProductImage, (productImage) => productImage.product, {
     cascade: true,
     eager: true,
   })
   images?: ProductImage[];
+
+  @ManyToOne(() => UserEntity, (user) => user.product, { eager: true })
+  user: UserEntity;
 
   @BeforeInsert()
   checkSlugInsert() {

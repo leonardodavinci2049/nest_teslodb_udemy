@@ -2,16 +2,21 @@ import { Injectable } from '@nestjs/common';
 
 import { ProductsService } from './../products/products.service';
 import { initialData } from './data/seed-data';
+import { UserEntity } from 'src/auth/entities/user.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class SeedService {
+  @InjectRepository(UserEntity)
+  private readonly userRepository: Repository<UserEntity>;
   constructor(private readonly productsService: ProductsService) {}
 
   async runSeed() {
     await this.deleteTables();
-    // const adminUser = await this.insertUsers();
+    const adminUser = await this.insertUsers();
 
-    await this.insertNewProducts();
+    await this.insertNewProducts(adminUser);
 
     return 'SEED EXECUTED';
   }
@@ -19,14 +24,14 @@ export class SeedService {
   private async deleteTables() {
     await this.productsService.deleteAllProducts();
 
-    //const queryBuilder = this.userRepository.createQueryBuilder();
-    // await queryBuilder.delete().where({}).execute();
+    const queryBuilder = this.userRepository.createQueryBuilder();
+    await queryBuilder.delete().where({}).execute();
   }
 
   private async insertUsers() {
-    /*    const seedUsers = initialData.users;
+    const seedUsers = initialData.users;
 
-    const users: User[] = [];
+    const users: UserEntity[] = [];
 
     seedUsers.forEach((user) => {
       users.push(this.userRepository.create(user));
@@ -34,10 +39,10 @@ export class SeedService {
 
     const dbUsers = await this.userRepository.save(seedUsers);
 
-    return dbUsers[0]; */
+    return dbUsers[0];
   }
 
-  private async insertNewProducts() {
+  private async insertNewProducts(user: UserEntity) {
     await this.productsService.deleteAllProducts();
 
     const products = initialData.products;
@@ -45,7 +50,7 @@ export class SeedService {
     const insertPromises = [];
 
     products.forEach((product) => {
-      insertPromises.push(this.productsService.create(product));
+      insertPromises.push(this.productsService.create(product, user));
     });
 
     await Promise.all(insertPromises);

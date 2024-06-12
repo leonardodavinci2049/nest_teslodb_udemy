@@ -13,21 +13,22 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 import { PaginationDto } from 'src/core/Pagination/pagination.dto';
-import { Product, ProductImage } from './entities';
+import { ProductEntity, ProductImage } from './entities';
+import { UserEntity } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class ProductsService {
   private readonly logger = new Logger('ProductsService');
 
   constructor(
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>,
+    @InjectRepository(ProductEntity)
+    private readonly productRepository: Repository<ProductEntity>,
     @InjectRepository(ProductImage)
     private readonly productImageRepository: Repository<ProductImage>,
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: UserEntity) {
     try {
       if (createProductDto.price === undefined) {
         createProductDto.price = 0;
@@ -44,6 +45,7 @@ export class ProductsService {
         images: images.map((image) =>
           this.productImageRepository.create({ url: image }),
         ),
+        user: user,
       });
       await this.productRepository.save(product);
       return { ...product, images };
@@ -70,7 +72,7 @@ export class ProductsService {
   }
 
   async findOne(term: string) {
-    let product: Product;
+    let product: ProductEntity;
 
     if (isUUID(term)) {
       product = await this.productRepository.findOneBy({ id: term });
@@ -98,7 +100,11 @@ export class ProductsService {
     };
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    user: UserEntity,
+  ) {
     const { images, ...toUpdate } = updateProductDto;
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
@@ -121,6 +127,7 @@ export class ProductsService {
       }
 
       // await this.productRepository.save( product );
+      product.user = user;
       await queryRunner.manager.save(product);
 
       await queryRunner.commitTransaction();
